@@ -1,0 +1,6 @@
+pytest>=7.0.0
+pytest-asyncio>=0.21.0
+# Optional Phase 2 SAST & CI/CD SCA tools (not required at runtime):
+bandit>=1.7.5
+pip-audit>=2.7.0
+

@@ -1,0 +1,12 @@
+version: '3.8'
+
+services:
+  agos-validator:
+    build: .
+    container_name: agos-4-1-validator
+    environment:
+      - AGOS_PROVENANCE_SECRET=agos-4-1-docker-validation-secret-minimum-32b!
+      - AGOS_DLP_MODE=enforce
+      - AGOS_SCANNER_MODE=enforce
+    volumes:
+      - ./:/app

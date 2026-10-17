@@ -1,0 +1,8 @@
+pydantic>=2.0.0
+mcp>=1.0.0
+fastapi>=0.110.0
+uvicorn>=0.28.0
+openai>=1.0.0
+python-dotenv>=1.0.0
+# cryptography>=42.0.0  # Kept as phantom dependency, not directly imported
+# PyJWT>=2.8.0  # Kept as phantom dependency, not directly imported

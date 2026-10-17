@@ -1,0 +1,25 @@
+{
+  "timestamp": "2026-10-17T19:52:31Z",
+  "agos_version": "4.1.0",
+  "platform": "win32",
+  "python_version": "3.12.10 (tags/v3.12.10:0cc8128, Apr  8 2025, 12:21:36) [MSC v.1943 64 bit (AMD64)]",
+  "overall_status": "PASS",
+  "duration_seconds": 12.32,
+  "dynamic_probes": {
+    "DLP_PESEL_Checksum": "PASS",
+    "DLP_NIP_Checksum": "PASS",
+    "DLP_Luhn_Card": "PASS",
+    "DLP_IBAN_Checksum": "PASS",
+    "DLP_Pseudonymization_Vault": "PASS",
+    "DLP_Base64_Evasion_Intercept": "PASS",
+    "Provenance_Secret_Redaction": "PASS",
+    "AST_SAST_Vulnerabilities": "PASS",
+    "SupplyChain_Typosquatting": "PASS",
+    "SupplyChain_Slopsquatting": "PASS",
+    "Sensitive_File_Enforcement": "PASS",
+    "Workspace_Escape_Defense": "PASS",
+    "Direct_Tool_Bypass_Blocked": "PASS",
+    "Policy_Exception_Fail_Closed": "PASS"
+  },
+  "pytest_exit_code": 0
+}
