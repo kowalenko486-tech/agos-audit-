@@ -155,12 +155,12 @@ yaml.load('foo: bar')
     # 12. Workspace Escape & UNC Paths
     unc_denied = False
     try:
-        resolve_and_validate_path(str(BASE_DIR), r"\\malicious\share\exploit.py")
+        resolve_and_validate_path(r"\\malicious\share\exploit.py", str(BASE_DIR))
     except SecurityPathError:
         unc_denied = True
     traversal_denied = False
     try:
-        resolve_and_validate_path(str(BASE_DIR), "../../../../etc/shadow")
+        resolve_and_validate_path("../../../../etc/shadow", str(BASE_DIR))
     except SecurityPathError:
         traversal_denied = True
     log_step("Scope Guard: Blokada ucieczki z katalogu i ścieżek sieciowych UNC", unc_denied and traversal_denied)

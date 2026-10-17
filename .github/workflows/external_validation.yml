@@ -27,6 +27,11 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt -r requirements-test.txt
 
+      - name: Configure Git Identity for Tests
+        run: |
+          git config --global user.name "AGOS CI Runner"
+          git config --global user.email "ci@agos.internal"
+
       - name: Run AGOS 4.1 External Validation Runner
         env:
           AGOS_PROVENANCE_SECRET: ${{ secrets.AGOS_PROVENANCE_SECRET || 'agos-4-1-github-actions-secret-minimum-32b!' }}
