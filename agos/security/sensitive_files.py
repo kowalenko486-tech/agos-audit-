@@ -63,9 +63,11 @@ COMPILED_GIT = [re.compile(p, re.IGNORECASE) for p in GIT_PATTERNS]
 
 def is_git_internal_path(path: Union[str, Path]) -> bool:
     """Checks whether the path points to or is inside .git/."""
-    p_str = unicodedata.normalize('NFC', str(path).replace('/', '\\'))
-    parts = Path(p_str).parts
-    return ".git" in parts
+    norm = unicodedata.normalize('NFC', str(path).replace('\\', '/'))
+    parts = [p for p in norm.split('/') if p]
+    if ".git" in parts:
+        return True
+    return any(p.search(norm) for p in COMPILED_GIT)
 
 
 def is_sensitive_path(path: Union[str, Path]) -> bool:
