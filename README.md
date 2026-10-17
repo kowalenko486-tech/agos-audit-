@@ -1,5 +1,10 @@
 # AGOS 4.1 Core — Samodzielna Paczka Walidacji Zewnętrznej (Standalone External Validator)
 
+[![AGOS 4.1 External Security Validation](https://github.com/kowalenko486-tech/agos-audit-/actions/workflows/external_validation.yml/badge.svg)](https://github.com/kowalenko486-tech/agos-audit-/actions/workflows/external_validation.yml)
+![Zero-Trust](https://img.shields.io/badge/Security-Zero--Trust%20Compliant-brightgreen)
+![OWASP LLM](https://img.shields.io/badge/OWASP-Top%2010%20LLM%20Passed-blue)
+![Exit Code](https://img.shields.io/badge/Exit%20Code-0%20(PASS)-success)
+
 Ta paczka pozwala na **w pełni niezależną walidację bezpieczeństwa systemu AGOS 4.1 na dowolnej zewnętrznej maszynie**:
 * **VPS / Serwer Linux (Ubuntu, Debian, AlmaLinux)**
 * **Kontener Docker**
