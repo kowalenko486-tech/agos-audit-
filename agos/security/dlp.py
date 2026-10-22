@@ -37,7 +37,7 @@ class DLPMode(str, Enum):
 
     @classmethod
     def from_env(cls) -> "DLPMode":
-        raw = os.getenv("AGOS_DLP_MODE", "warn").strip().lower()
+        raw = os.getenv("AGOS_DLP_MODE", "enforce").strip().lower()
         for mode in cls:
             if mode.value == raw:
                 return mode
@@ -104,6 +104,10 @@ class TokenVault:
     @property
     def size(self) -> int:
         return len(self._token_to_value)
+
+    def tokens(self) -> list:
+        """Public, value-free view: [(token, category)] — never exposes raw sensitive values."""
+        return [(tok, tok.strip("[]").split(":", 1)[-1].rsplit("_", 1)[0]) for tok in self._token_to_value]
 
 
 # ── Mathematical Checksum Validators ─────────────────────────────────────────

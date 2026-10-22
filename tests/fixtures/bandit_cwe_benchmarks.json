@@ -1,0 +1,101 @@
+[
+  {
+    "id": "BANDIT-B102-EVAL-01",
+    "cwe": "CWE-95",
+    "category": "Code Injection",
+    "description": "Direct eval() call with untrusted input",
+    "expected_finding": "eval()",
+    "is_vulnerable": true,
+    "code": "def execute_user_code(user_input):\n    result = eval(user_input)\n    return result\n"
+  },
+  {
+    "id": "BANDIT-B102-EXEC-01",
+    "cwe": "CWE-95",
+    "category": "Code Injection",
+    "description": "Direct exec() call dynamically executing statements",
+    "expected_finding": "exec()",
+    "is_vulnerable": true,
+    "code": "def run_dynamic(code_snippet):\n    exec(code_snippet)\n"
+  },
+  {
+    "id": "BANDIT-B602-SUBPROCESS-SHELL-TRUE-01",
+    "cwe": "CWE-78",
+    "category": "Command Injection",
+    "description": "subprocess.run with shell=True allowing command chaining",
+    "expected_finding": "subprocess.run(..., shell=True)",
+    "is_vulnerable": true,
+    "code": "import subprocess\ndef ping_host(host):\n    cmd = f'ping -c 1 {host}'\n    subprocess.run(cmd, shell=True)\n"
+  },
+  {
+    "id": "BANDIT-B602-SUBPROCESS-POPEN-SHELL-TRUE-02",
+    "cwe": "CWE-78",
+    "category": "Command Injection",
+    "description": "subprocess.Popen with shell=True",
+    "expected_finding": "subprocess.Popen(..., shell=True)",
+    "is_vulnerable": true,
+    "code": "import subprocess\ndef start_worker(worker_cmd):\n    proc = subprocess.Popen(worker_cmd, shell=True)\n    return proc\n"
+  },
+  {
+    "id": "BANDIT-B602-SUBPROCESS-CALL-SHELL-TRUE-03",
+    "cwe": "CWE-78",
+    "category": "Command Injection",
+    "description": "subprocess.call with shell=True",
+    "expected_finding": "subprocess.call(..., shell=True)",
+    "is_vulnerable": true,
+    "code": "import subprocess\ndef invoke_tool(tool_path):\n    subprocess.call(tool_path, shell=True)\n"
+  },
+  {
+    "id": "BANDIT-B301-PICKLE-LOADS-01",
+    "cwe": "CWE-502",
+    "category": "Insecure Deserialization",
+    "description": "pickle.loads on untrusted binary payload",
+    "expected_finding": "pickle.loads()",
+    "is_vulnerable": true,
+    "code": "import pickle\ndef unpack_data(raw_bytes):\n    obj = pickle.loads(raw_bytes)\n    return obj\n"
+  },
+  {
+    "id": "BANDIT-B301-PICKLE-LOAD-FILE-02",
+    "cwe": "CWE-502",
+    "category": "Insecure Deserialization",
+    "description": "pickle.load reading from untrusted file stream",
+    "expected_finding": "pickle.load()",
+    "is_vulnerable": true,
+    "code": "import pickle\ndef read_cache(f):\n    return pickle.load(f)\n"
+  },
+  {
+    "id": "BANDIT-B506-YAML-UNSAFE-LOAD-01",
+    "cwe": "CWE-20",
+    "category": "Arbitrary Code Execution",
+    "description": "yaml.load without SafeLoader allowing arbitrary object instantiation",
+    "expected_finding": "yaml.load()",
+    "is_vulnerable": true,
+    "code": "import yaml\ndef parse_config(content):\n    cfg = yaml.load(content)\n    return cfg\n"
+  },
+  {
+    "id": "SECURE-SUBPROCESS-LIST-ARGS-01",
+    "cwe": "NONE",
+    "category": "Safe Implementation",
+    "description": "subprocess.run with safe argument list and shell=False",
+    "expected_finding": null,
+    "is_vulnerable": false,
+    "code": "import subprocess\ndef safe_ping(host):\n    subprocess.run(['ping', '-c', '1', host], shell=False, check=True)\n"
+  },
+  {
+    "id": "SECURE-YAML-SAFELOADER-01",
+    "cwe": "NONE",
+    "category": "Safe Implementation",
+    "description": "yaml.load explicitly using SafeLoader",
+    "expected_finding": null,
+    "is_vulnerable": false,
+    "code": "import yaml\ndef safe_parse(content):\n    return yaml.load(content, Loader=yaml.SafeLoader)\n"
+  },
+  {
+    "id": "SECURE-JSON-DESERIALIZATION-01",
+    "cwe": "NONE",
+    "category": "Safe Implementation",
+    "description": "json.loads standard safe deserialization",
+    "expected_finding": null,
+    "is_vulnerable": false,
+    "code": "import json\ndef safe_data_decode(payload):\n    return json.loads(payload)\n"
+  }
+]

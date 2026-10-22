@@ -57,6 +57,20 @@ class WorkspaceManager:
             if len(parts) >= 2 and parts[1].lower() in ("windows", "system32", "program files"):
                 raise ValueError(f"Niedozwolone ustawienie katalogu systemowego jako workspace: {target}")
 
+            # F-11: deny the user's home directory itself and credential/config stores.
+            if target == Path.home().resolve():
+                raise ValueError(f"Niedozwolone ustawienie katalogu domowego jako workspace: {target}")
+            blocked_parts = {".ssh", ".gnupg", ".aws", ".kube", ".docker", ".azure"}
+            if any(p.lower() in blocked_parts for p in parts):
+                raise ValueError(f"Niedozwolony katalog z danymi uwierzytelniającymi jako workspace: {target}")
+
+            # F-11: optional allow-list of parent directories (os.pathsep separated).
+            allow_raw = os.environ.get("AGOS_WORKSPACE_ALLOWLIST", "").strip()
+            if allow_raw:
+                roots = [Path(r).resolve() for r in allow_raw.split(os.pathsep) if r.strip()]
+                if not any(target == r or r in target.parents for r in roots):
+                    raise ValueError(f"Workspace poza listą dozwolonych korzeni (AGOS_WORKSPACE_ALLOWLIST): {target}")
+
             self._current_root = target
             logger.info(f"[AGOS WorkspaceManager] Aktywny workspace przestawiony na: {target}")
             return self._current_root

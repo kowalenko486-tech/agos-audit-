@@ -195,6 +195,10 @@ def run_pytest_suites(all_suites=False):
             "tests/test_dlp.py",
             "tests/test_phase2_scanner_and_deps.py",
             "tests/test_phase3_llm_zero_trust.py",
+            "tests/test_injecagent_benchmark.py",
+            "tests/test_external_bandit_sast.py",
+            "tests/test_external_dlp_secrets.py",
+            "tests/test_property_state_machine.py",
             "-v"
         ]
     print(f"Uruchamianie: pytest {' '.join(args)}\n")

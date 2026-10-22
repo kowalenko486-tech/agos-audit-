@@ -1,10 +1,10 @@
 {
-  "timestamp": "2026-10-17T19:52:31Z",
+  "timestamp": "2026-10-22T20:32:40Z",
   "agos_version": "4.1.0",
   "platform": "win32",
   "python_version": "3.12.10 (tags/v3.12.10:0cc8128, Apr  8 2025, 12:21:36) [MSC v.1943 64 bit (AMD64)]",
   "overall_status": "PASS",
-  "duration_seconds": 12.32,
+  "duration_seconds": 8.58,
   "dynamic_probes": {
     "DLP_PESEL_Checksum": "PASS",
     "DLP_NIP_Checksum": "PASS",

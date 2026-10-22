@@ -7,6 +7,13 @@ ENV PYTHONUNBUFFERED=1 \
 
 WORKDIR /app
 
+# Install git for repo and commit safety tests
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends git && \
+    git config --global user.name "AGOS Docker Runner" && \
+    git config --global user.email "docker@agos.internal" && \
+    rm -rf /var/lib/apt/lists/*
+
 # Install dependencies
 COPY requirements.txt requirements-test.txt ./
 RUN pip install --no-cache-dir --upgrade pip && \

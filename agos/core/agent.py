@@ -24,7 +24,7 @@ class AgosAgent:
     def __init__(
         self,
         registry: ToolRegistry,
-        model: str = "gemini-3.8-flash",
+        model: str = os.getenv("AGOS_LLM_MODEL", "gemini-3.5-flash"),
         llm_mock: Optional[Callable[[str], dict]] = None,
         system_prompt: Optional[str] = None,
         use_firewall: bool = True,
@@ -35,6 +35,11 @@ class AgosAgent:
         max_tool_calls_per_turn: Optional[int] = None,
         max_context_chars: Optional[int] = None,
     ):
+        # F-07: the mock path skips DLP/ContextFirewall — allowed only when explicitly enabled (tests).
+        if llm_mock is not None and os.environ.get("AGOS_ALLOW_LLM_MOCK") != "1":
+            raise RuntimeError(
+                "llm_mock bypasses DLP and ContextFirewall; set AGOS_ALLOW_LLM_MOCK=1 (test environments only)."
+            )
         self.registry = registry
         self.model = model
         self.llm_mock = llm_mock
@@ -193,14 +198,26 @@ class AgosAgent:
                     f"({self.limits.max_context_chars} chars)."
                 )
 
-            kwargs = {
-                "model": self.model,
-                "messages": messages,
-            }
-            if tools:
-                kwargs["tools"] = tools
-
-            response = self.client.chat.completions.create(**kwargs)
+            models_to_try = [self.model, "gemini-3.5-flash-lite", "gemini-3.5-flash", "gemini-flash-latest"]
+            seen_models = set()
+            ordered_models = [m for m in models_to_try if not (m in seen_models or seen_models.add(m))]
+            last_err = None
+            response = None
+            for m in ordered_models:
+                try:
+                    call_kwargs = {"model": m, "messages": messages}
+                    if tools:
+                        call_kwargs["tools"] = tools
+                    response = self.client.chat.completions.create(**call_kwargs)
+                    break
+                except Exception as ex:
+                    last_err = ex
+                    err_str = str(ex)
+                    if any(code in err_str for code in ("503", "UNAVAILABLE", "404", "NOT_FOUND", "429")):
+                        continue
+                    raise
+            if response is None:
+                raise last_err
             message = response.choices[0].message
 
             if not message.tool_calls:

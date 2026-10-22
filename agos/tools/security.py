@@ -36,7 +36,7 @@ SECURITY_SCAN_PATTERNS = {
 def scan_python_ast_sast(source: str) -> List[str]:
     """
     Zero-dependency AST SAST scanner detecting high-confidence vulnerabilities
-    typical of AI-generated Python code (OWASP Top 10).
+    typical of AI-generated Python code (OWASP Top 10 + Sandbox Escape Heuristics).
     """
     try:
         tree = ast.parse(source)
@@ -45,45 +45,76 @@ def scan_python_ast_sast(source: str) -> List[str]:
 
     findings: List[str] = []
     for node in ast.walk(tree):
-        if not isinstance(node, ast.Call):
-            continue
         lineno = getattr(node, "lineno", 1)
 
-        # 1. Direct eval() or exec()
-        if isinstance(node.func, ast.Name) and node.func.id in ("eval", "exec"):
-            findings.append(
-                f"Linia {lineno}: Wykryto niebezpieczne wywołanie '{node.func.id}()' (AST-SAST: Code Injection)"
-            )
-
-        elif isinstance(node.func, ast.Attribute):
-            attr = node.func.attr
-            owner = node.func.value.id if isinstance(node.func.value, ast.Name) else ""
-
-            # 2. subprocess.*(..., shell=True)
-            if owner == "subprocess" and attr in ("run", "Popen", "call", "check_call", "check_output"):
-                for kw in node.keywords:
-                    if kw.arg == "shell" and isinstance(kw.value, ast.Constant) and kw.value.value is True:
-                        findings.append(
-                            f"Linia {lineno}: Wykryto 'subprocess.{attr}(..., shell=True)' (AST-SAST: Command Injection)"
-                        )
-
-            # 3. Insecure deserialization: pickle.load / pickle.loads / marshal.loads
-            elif owner in ("pickle", "cPickle", "marshal") and attr in ("load", "loads"):
+        # ── 1. Dynamic Reflection & Sandbox Escape Identifiers (Name) ────────
+        if isinstance(node, ast.Name):
+            if node.id in ("__builtins__", "__import__"):
                 findings.append(
-                    f"Linia {lineno}: Wykryto niebezpieczną deserializację '{owner}.{attr}()' (AST-SAST: Insecure Deserialization)"
+                    f"Linia {lineno}: Wykryto odwołanie do '{node.id}' (AST-SAST: Dynamic Reflection / Sandbox Escape)"
                 )
 
-            # 4. Unsafe yaml.load() without SafeLoader
-            elif owner == "yaml" and attr == "load":
-                has_safe_loader = False
-                for kw in node.keywords:
-                    if kw.arg == "Loader" and "Safe" in ast.dump(kw.value):
-                        has_safe_loader = True
-                if len(node.args) >= 2 and "Safe" in ast.dump(node.args[1]):
-                    has_safe_loader = True
-                if not has_safe_loader:
+        # ── 2. Meta-class / MRO / Sandbox Escape Attributes (Attribute) ──────
+        elif isinstance(node, ast.Attribute):
+            if node.attr in ("__subclasses__", "__bases__", "__mro__", "__globals__", "__code__", "__builtins__"):
+                findings.append(
+                    f"Linia {lineno}: Wykryto próbę inspekcji metaklas/refleksji '{node.attr}' (AST-SAST: MRO / Sandbox Escape)"
+                )
+
+        # ── 3. Dangerous Function and Method Calls (Call) ────────────────────
+        elif isinstance(node, ast.Call):
+            # Direct eval() or exec()
+            if isinstance(node.func, ast.Name) and node.func.id in ("eval", "exec"):
+                findings.append(
+                    f"Linia {lineno}: Wykryto niebezpieczne wywołanie '{node.func.id}()' (AST-SAST: Code Injection)"
+                )
+
+            # getattr() called with suspicious dynamic targets or builtins
+            elif isinstance(node.func, ast.Name) and node.func.id == "getattr":
+                if len(node.args) >= 1:
+                    first_arg = node.args[0]
+                    if (isinstance(first_arg, ast.Name) and first_arg.id in ("__builtins__", "globals")) or (
+                        isinstance(first_arg, ast.Call) and isinstance(first_arg.func, ast.Name) and first_arg.func.id == "globals"
+                    ):
+                        findings.append(
+                            f"Linia {lineno}: Wykryto niebezpieczne wywołanie 'getattr({ast.dump(first_arg)})' (AST-SAST: Dynamic Reflection Injection)"
+                        )
+
+            elif isinstance(node.func, ast.Attribute):
+                attr = node.func.attr
+                owner = node.func.value.id if isinstance(node.func.value, ast.Name) else ""
+
+                # subprocess.*(..., shell=True)
+                if owner == "subprocess" and attr in ("run", "Popen", "call", "check_call", "check_output"):
+                    for kw in node.keywords:
+                        if kw.arg == "shell" and isinstance(kw.value, ast.Constant) and kw.value.value is True:
+                            findings.append(
+                                f"Linia {lineno}: Wykryto 'subprocess.{attr}(..., shell=True)' (AST-SAST: Command Injection)"
+                            )
+
+                # Insecure deserialization: pickle.load / pickle.loads / marshal.loads
+                elif owner in ("pickle", "cPickle", "marshal") and attr in ("load", "loads"):
                     findings.append(
-                        f"Linia {lineno}: Wykryto 'yaml.load()' bez SafeLoader (AST-SAST: Arbitrary Code Execution)"
+                        f"Linia {lineno}: Wykryto niebezpieczną deserializację '{owner}.{attr}()' (AST-SAST: Insecure Deserialization)"
+                    )
+
+                # Unsafe yaml.load() without SafeLoader
+                elif owner == "yaml" and attr == "load":
+                    has_safe_loader = False
+                    for kw in node.keywords:
+                        if kw.arg == "Loader" and "Safe" in ast.dump(kw.value):
+                            has_safe_loader = True
+                    if len(node.args) >= 2 and "Safe" in ast.dump(node.args[1]):
+                        has_safe_loader = True
+                    if not has_safe_loader:
+                        findings.append(
+                            f"Linia {lineno}: Wykryto 'yaml.load()' bez SafeLoader (AST-SAST: Arbitrary Code Execution)"
+                        )
+
+                # Dynamic module loading via importlib
+                elif owner == "importlib" and attr in ("import_module", "__import__"):
+                    findings.append(
+                        f"Linia {lineno}: Wykryto dynamiczne ładowanie modułu '{owner}.{attr}()' (AST-SAST: Dynamic Code Injection)"
                     )
 
     return findings

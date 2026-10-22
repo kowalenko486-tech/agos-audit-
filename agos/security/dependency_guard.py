@@ -72,6 +72,7 @@ APPROVED_PACKAGES: Set[str] = {
     "httpcore2",
     "httpx",
     "httpx2",
+    "hypothesis",
     "idna",
     "iniconfig",
     "jiter",

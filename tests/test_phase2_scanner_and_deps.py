@@ -70,6 +70,33 @@ def test_ast_sast_allows_safe_alternatives():
     assert scan_python_ast_sast(safe_code) == []
 
 
+def test_ast_sast_detects_reflection_and_sandbox_escapes():
+    """Verifies that dynamic reflection and sandbox escape tricks are strictly blocked."""
+    # 1. getattr on __builtins__ with string concatenation bypass
+    obf_getattr = 'getattr(__builtins__, "ev" + "al")("__import__(\'os\').system(\'whoami\')")\n'
+    findings1 = scan_python_ast_sast(obf_getattr)
+    assert len(findings1) >= 1
+    assert any("__builtins__" in f or "Dynamic Reflection" in f for f in findings1)
+
+    # 2. MRO / __subclasses__ traversal sandbox escape
+    mro_escape = '().__class__.__base__.__subclasses__()[140]().load_module("os").system("whoami")\n'
+    findings2 = scan_python_ast_sast(mro_escape)
+    assert len(findings2) >= 1
+    assert any("__subclasses__" in f for f in findings2)
+
+    # 3. Direct __import__ call
+    import_escape = '__import__("os").system("id")\n'
+    findings3 = scan_python_ast_sast(import_escape)
+    assert len(findings3) >= 1
+    assert any("__import__" in f for f in findings3)
+
+    # 4. importlib dynamic module execution
+    importlib_escape = 'import importlib\nimportlib.import_module("os").system("whoami")\n'
+    findings4 = scan_python_ast_sast(importlib_escape)
+    assert len(findings4) >= 1
+    assert any("importlib" in f for f in findings4)
+
+
 # ── 3. DependencyGuard: Slopsquatting & Typosquatting Detection ──────────────
 
 def test_dependency_guard_allows_approved_and_stdlib():

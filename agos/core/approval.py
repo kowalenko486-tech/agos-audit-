@@ -222,3 +222,23 @@ class ApprovalGate:
     def get_approval(self, approval_id: str) -> Optional[Approval]:
         with self._lock:
             return self._approvals.get(approval_id)
+
+    def list_approvals(self) -> List[Approval]:
+        """Returns all approvals registered in the gate."""
+        with self._lock:
+            return list(self._approvals.values())
+
+    def reject(self, approval_id: str, reason: str = "") -> Approval:
+        """Rejects a pending approval request."""
+        with self._lock:
+            if approval_id not in self._approvals:
+                raise KeyError(f"Approval ID {approval_id} not found.")
+            app = self._approvals[approval_id]
+            # Only an open approval can be rejected; CONSUMED/EXPIRED/REVOKED records are immutable history.
+            if app.status not in (ApprovalStatus.PENDING, ApprovalStatus.GRANTED):
+                raise RuntimeError(f"Cannot reject approval in state {app.status}.")
+            app.status = ApprovalStatus.REJECTED
+            return app
+
+
+approval_gate = ApprovalGate()

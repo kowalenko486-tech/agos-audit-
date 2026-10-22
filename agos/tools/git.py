@@ -178,8 +178,10 @@ class GitCommitTool(TrustedTool):
             )
             full_msg = message.strip() + trace_footer
 
+            # F-04: pathspec restricts the commit to the exact approved files; pre-staged
+            # unrelated files in the index can never leak into this commit.
             commit_res = subprocess.run(
-                ["git", "commit", "-m", full_msg],
+                ["git", "commit", "-m", full_msg, "--"] + rel_paths,
                 cwd=str(ws),
                 capture_output=True,
                 text=True,

@@ -77,6 +77,11 @@ Dodatkowe opcje:
    * Zabezpieczenie przed atakami na integralność planu, dowodów i zgód.
    * Zasada *Fail-Closed* przy jakimkolwiek błędzie wykonawczym.
 
+5. **Benchmarki Adwersaryjne Prompt Injection (InjecAgent & Fuzzing):**
+   * Zestaw 122 testów z benchmarku InjecAgent (próby pośredniego prompt injection, manipulacji agentem i kradzieży danych).
+   * Property-based fuzzing maszyny stanów (Hypothesis).
+   * Pełny certyfikat bezpieczeństwa znajduje się w [AGOS_4_1_SECURITY_CERTIFICATE.md](AGOS_4_1_SECURITY_CERTIFICATE.md).
+
 ---
 
 ## 📊 Wynik i Raport

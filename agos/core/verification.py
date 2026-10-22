@@ -328,8 +328,13 @@ class VerificationGate:
                     for av in amp_violations:
                         all_amp_passed = False
                         violations.append(f"{av.rule}: {av.message} [{av.denial_code}]")
-                except Exception:
-                    pass
+                except Exception as amp_err:
+                    # Fail-closed: an error in the anti-amputation check must never pass silently.
+                    all_amp_passed = False
+                    violations.append(
+                        f"INV-041:CHECK_ERROR: anti-amputation check failed for '{f_path}': {amp_err} "
+                        f"[ANTI_AMPUTATION_VIOLATION]"
+                    )
 
         if targets:
             result.stage_anti_amputation = StageStatus.PASSED if all_amp_passed else StageStatus.FAILED
